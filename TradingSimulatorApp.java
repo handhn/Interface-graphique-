@@ -1,122 +1,3 @@
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-public class TradingSimulatorApp {
-    private JFrame loginFrame;
-    private JFrame mainFrame;
-    private JTextField usernameField;
-    private JPasswordField passwordField;
-    private JComboBox<String> symbolComboBox;
-    private JComboBox<String> strategyComboBox;
-    private JTextArea resultArea;
-    private String currentUser;
-    private Signal signal;
-    private String accessKey;
-    private Map<String, List<String>> userSimulationHistory;
-    private Map<String, String> users;
-
-    // Couleurs
-    private final Color PRIMARY_COLOR = new Color(75, 0, 130);
-    private final Color SECONDARY_COLOR = new Color(106, 90, 205);
-    private final Color BACKGROUND_COLOR = new Color(240, 248, 255);
-    private final Color TEXT_COLOR = new Color(25, 25, 112);
-
-    public TradingSimulatorApp() {
-        signal = new Signal();
-        accessKey = "b7f506784eb6b5922bf44ecc26a22708"; // Remplacez par votre clé d'accès
-        userSimulationHistory = new HashMap<>();
-        users = new HashMap<>();
-        createLoginPage();
-    }
-
-    private void createLoginPage() {
-        loginFrame = new JFrame("Connexion - Simulateur de Trading");
-        loginFrame.setSize(400, 300);
-        loginFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        loginFrame.setLayout(new GridBagLayout());
-        loginFrame.getContentPane().setBackground(BACKGROUND_COLOR);
-
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(10, 10, 10, 10);
-
-        JLabel titleLabel = new JLabel("Connexion");
-        titleLabel.setFont(new Font("Arial", Font.BOLD, 28));
-        titleLabel.setForeground(PRIMARY_COLOR);
-        gbc.gridx = 0; gbc.gridy = 0; gbc.gridwidth = 2;
-        loginFrame.add(titleLabel, gbc);
-
-        gbc.gridwidth = 1;
-        gbc.anchor = GridBagConstraints.WEST;
-
-        JLabel userLabel = new JLabel("Utilisateur:");
-        userLabel.setForeground(TEXT_COLOR);
-        userLabel.setFont(new Font("Arial", Font.BOLD, 14));
-        gbc.gridx = 0; gbc.gridy = 1;
-        loginFrame.add(userLabel, gbc);
-
-        usernameField = new JTextField(15);
-        usernameField.setFont(new Font("Arial", Font.PLAIN, 14));
-        gbc.gridx = 1; gbc.gridy = 1;
-        loginFrame.add(usernameField, gbc);
-
-        JLabel passLabel = new JLabel("Mot de passe:");
-        passLabel.setForeground(TEXT_COLOR);
-        passLabel.setFont(new Font("Arial", Font.BOLD, 14));
-        gbc.gridx = 0; gbc.gridy = 2;
-        loginFrame.add(passLabel, gbc);
-
-        passwordField = new JPasswordField(15);
-        passwordField.setFont(new Font("Arial", Font.PLAIN, 14));
-        gbc.gridx = 1; gbc.gridy = 2;
-        loginFrame.add(passwordField, gbc);
-
-        JButton loginButton = createStyledButton("Se connecter");
-        gbc.gridx = 0; gbc.gridy = 3; gbc.gridwidth = 1;
-        loginFrame.add(loginButton, gbc);
-
-        JButton registerButton = createStyledButton("S'inscrire");
-        gbc.gridx = 1; gbc.gridy = 3;
-        loginFrame.add(registerButton, gbc);
-
-        loginButton.addActionListener(e -> login());
-        registerButton.addActionListener(e -> register());
-
-        loginFrame.setLocationRelativeTo(null);
-        loginFrame.setVisible(true);
-    }
-
-    private void login() {
-        String username = usernameField.getText();
-        String password = new String(passwordField.getPassword());
-        if (users.containsKey(username) && users.get(username).equals(password)) {
-            currentUser = username;
-            loginFrame.dispose();
-            createMainPage();
-        } else {
-            JOptionPane.showMessageDialog(loginFrame, "Nom d'utilisateur ou mot de passe incorrect.");
-        }
-    }
-
-    private void register() {
-        String username = usernameField.getText();
-        String password = new String(passwordField.getPassword());
-        if (!username.isEmpty() && !password.isEmpty()) {
-            if (users.containsKey(username)) {
-                JOptionPane.showMessageDialog(loginFrame, "Cet utilisateur existe déjà.");
-            } else {
-                users.put(username, password);
-                JOptionPane.showMessageDialog(loginFrame, "Inscription réussie. Vous pouvez maintenant vous connecter.");
-            }
-        } else {
-            JOptionPane.showMessageDialog(loginFrame, "Veuillez entrer un nom d'utilisateur et un mot de passe valides.");
-        }
-    }
-
     private void createMainPage() {
         mainFrame = new JFrame("Simulateur de Trading - " + currentUser);
         mainFrame.setSize(800, 600);
@@ -212,99 +93,25 @@ public class TradingSimulatorApp {
     }
 
     private void simulate() {
-        String symbol = (String) symbolComboBox.getSelectedItem();
-        String strategy = (String) strategyComboBox.getSelectedItem();
-        
-        try {
-            signal.updateFromMarketstack(accessKey, symbol);
-            List<Double> closingPrices = signal.getClosingPrices();
+    String symbol = (String) symbolComboBox.getSelectedItem();
+    String strategy = (String) strategyComboBox.getSelectedItem();
+    
+    try {
+        signal.updateFromMarketstack(accessKey, symbol);
+        List<Double> closingPrices = signal.getClosingPrices();
 
-            if (closingPrices.size() < 26) {
-                throw new Exception("Pas assez de données pour effectuer l'analyse");
-            }
-
-            String result = executeStrategy(strategy, closingPrices);
-            
-            String simulationResult = "Résultat de la simulation:\n\n" +
-                                      "Symbole: " + symbol + "\n" +
-                                      "Stratégie: " + strategy + "\n" +
-                                      "Résultat: " + result + "\n";
-            
-            resultArea.setText(simulationResult);
-            userSimulationHistory.computeIfAbsent(currentUser, k -> new ArrayList<>()).add(simulationResult);
-        } catch (Exception e) {
-            resultArea.setText("Erreur lors de la simulation : " + e.getMessage());
+        if (closingPrices.size() < 26) {
+            throw new Exception("Pas assez de données pour effectuer l'analyse");
         }
-    }
 
-    private void showHistory() {
-        JFrame historyFrame = new JFrame("Historique des Simulations - " + currentUser);
-        historyFrame.setSize(600, 400);
-        historyFrame.setLayout(new BorderLayout());
+        String result = executeStrategy(strategy, closingPrices);
         
-        JTextArea historyArea = new JTextArea();
-        historyArea.setEditable(false);
-        historyArea.setFont(new Font("Monospaced", Font.PLAIN, 14));
-        historyArea.setBackground(new Color(250, 250, 250));
-        historyArea.setForeground(TEXT_COLOR);
+        // Ajout de la date actuelle
+        String currentDate = java.time.LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss"));
         
-        List<String> userHistory = userSimulationHistory.getOrDefault(currentUser, new ArrayList<>());
-        if (userHistory.isEmpty()) {
-            historyArea.setText("Aucun historique de simulation disponible.");
-        } else {
-            for (String simulation : userHistory) {
-                historyArea.append(simulation + "\n----------------------------\n");
-            }
-        }
-        
-        JScrollPane scrollPane = new JScrollPane(historyArea);
-        scrollPane.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
-        historyFrame.add(scrollPane, BorderLayout.CENTER);
-        
-        historyFrame.setLocationRelativeTo(mainFrame);
-        historyFrame.setVisible(true);
-    }
+        String simulationResult = "Date : " + currentDate + "\n" +
+                                  "Symbole : " + symbol + "\n" +
+                                  "Stratégie : " + strategy + "\n" +
+                                  "Résultat : " + result + "\n" ;
 
-    private void logout() {
-        mainFrame.dispose();
-        createLoginPage();
-    }
-
-    private String executeStrategy(String strategy, List<Double> closingPrices) throws Exception {
-        switch (strategy) {
-            case "RSI":
-                IndicateurTechnique rsiIndicator = IndicateurTechnique.createRSI(closingPrices, 14);
-                StrategieRSI strategieRSI = new StrategieRSI(rsiIndicator);
-                return strategieRSI.executerAvecPrixCloture(closingPrices);
-            case "MACD":
-                IndicateurTechnique macdIndicator = IndicateurTechnique.createMACD(closingPrices, 12, 26, 9);
-                StrategieMACD strategieMACD = new StrategieMACD(macdIndicator);
-                return strategieMACD.executerAvecPrixCloture(closingPrices);
-            case "Moyennes Mobiles":
-                IndicateurTechnique smaIndicator = IndicateurTechnique.createSMA(closingPrices, 20);
-                StrategieMoyennesMobiles strategieMoyennesMobiles = new StrategieMoyennesMobiles(smaIndicator);
-                return strategieMoyennesMobiles.executerAvecPrixCloture(closingPrices);
-            case "Tendance":
-                IndicateurTechnique emaIndicator = IndicateurTechnique.createEMA(closingPrices, 20);
-                StrategieTendance strategieTendance = new StrategieTendance(emaIndicator);
-                return strategieTendance.executerAvecPrixCloture(closingPrices);
-            case "Bollinger":
-                IndicateurTechnique bollingerBandsIndicator = IndicateurTechnique.createBollingerBands(closingPrices, 20, 2.0);
-                StrategieBollinger strategieBollinger = new StrategieBollinger(bollingerBandsIndicator);
-                return strategieBollinger.executerAvecPrixCloture(closingPrices);
-            default:
-                throw new IllegalArgumentException("Stratégie non reconnue");
-        }
-    }
-
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            try {
-                UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            new TradingSimulatorApp();
-        });
-    }
-}
+        
