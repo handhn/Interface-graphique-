@@ -89,4 +89,3 @@ public class LoginPage {
         SwingUtilities.invokeLater(LoginPage::new);
     }
 }
-
