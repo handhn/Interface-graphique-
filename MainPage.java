@@ -22,7 +22,7 @@ public class MainPage {
 
         simulationHistory = new ArrayList<>();
         signal = new Signal();
-        accessKey = "00c7ccc8fcb3802924b72ca162c11bed"; // Assurez-vous d'utiliser votre propre clé d'accès
+        accessKey = "b7f506784eb6b5922bf44ecc26a22708"; // Assurez-vous d'utiliser votre propre clé d'accès
 
         // Panel pour les sélections
         JPanel selectionPanel = new JPanel(new GridLayout(3, 2, 10, 10));
