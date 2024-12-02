@@ -28,7 +28,7 @@ public class TradingSimulatorApp {
 
     public TradingSimulatorApp() {
         signal = new Signal();
-        accessKey = "e151d80c378a3619067daf2e67d2dade"; // Remplacez par votre clé d'accès
+        accessKey = "92e31572c78769a8a26f6f7262ac8ebc"; // Remplacez par votre clé d'accès
         userSimulationHistory = new HashMap<>();
         users = new HashMap<>();
         createLoginPage();
@@ -125,11 +125,25 @@ public class TradingSimulatorApp {
         mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         mainFrame.setLayout(new BorderLayout());
         mainFrame.getContentPane().setBackground(BACKGROUND_COLOR);
+        
+        
+        //
+        String[] symbols = {
+    		"AAPL (Apple)",
+    		"GOOGL (Google)",
+    		"MSFT (Microsoft)",
+    		"AMZN (Amazon)",
+    		"FB (Facebook)",
+    		"HDB (HDFC Bank)"
+	};
+	
+	symbolComboBox = new JComboBox<>(symbols);
+	//
 
         JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 20));
         topPanel.setBackground(BACKGROUND_COLOR);
 
-        symbolComboBox = new JComboBox<>(new String[]{"AAPL", "GOOGL", "MSFT", "AMZN", "FB", "HDB"});
+        //symbolComboBox = new JComboBox<>(new String[]{"AAPL", "GOOGL", "MSFT", "AMZN", "FB", "HDB"});
         strategyComboBox = new JComboBox<>(new String[]{"RSI", "MACD", "Moyennes Mobiles", "Tendance", "Bollinger"});
 
         styleComboBox(symbolComboBox);
@@ -212,10 +226,19 @@ public class TradingSimulatorApp {
         comboBox.setForeground(TEXT_COLOR);
         comboBox.setFont(new Font("Arial", Font.PLAIN, 14));
     }
+    
+
 
     private void simulate() {
-    String symbol = (String) symbolComboBox.getSelectedItem();
+    //String symbol = (String) symbolComboBox.getSelectedItem();
     String strategy = (String) strategyComboBox.getSelectedItem();
+    
+    // Récupérer l'élément sélectionné, qui est une chaîne de caractères du type "AAPL (Apple)"
+    String selectedSymbol = (String) symbolComboBox.getSelectedItem();
+
+    // Extraire le symbole de la chaîne (avant le premier espace)
+    String symbol = selectedSymbol.split(" ")[0];  // Cela va donner "AAPL" par exemple
+
     
     try {
         signal.updateFromMarketstack(accessKey, symbol);
@@ -231,7 +254,7 @@ public class TradingSimulatorApp {
         String currentDate = java.time.LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss"));
         
         String simulationResult = "Date : " + currentDate + "\n" +
-                                  "Symbole : " + symbol + "\n" +
+                                  "Symbole : " + symbol + "\n" + 
                                   "Stratégie : " + strategy + "\n" +
                                   "Résultat : " + result + "\n" ;
 
